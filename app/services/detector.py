@@ -12,7 +12,7 @@ class Detector:
         """
 
         self.model = YOLO(model_path)
-        self.classes = {1: 'Bus', 2: 'Car', 3: 'Motorcycle', 4: 'Pickup', 5: 'Truck'}
+        self.classes = {0: 'Bus', 1: 'Car', 2: 'Motorcycle', 3: 'Pickup', 4: 'Truck'}
 
     def _filter_predictions(self, yolo_predictions) -> dict:
         """
@@ -29,10 +29,11 @@ class Detector:
 
         results = {}
         for prediction in yolo_predictions[0].boxes:
-            class_name = self.classes[prediction.cls.detach().cpu().item()]
+            class_name = self.classes[int(prediction.cls.detach().cpu().item())]
             if class_name not in results:
                 results[class_name] = []
             results[class_name].append({
+                'class_name': class_name,
                 'confidence': prediction.conf.detach().cpu().item(),
                 'xyxy': prediction.xyxy[0].detach().cpu().tolist()
             })
