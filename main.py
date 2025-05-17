@@ -1,8 +1,9 @@
-from app.api.endpoints import detector_router
-from fastapi import FastAPI
 import uvicorn
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.endpoints.detector_endpoints import detector_router
+from app.api.endpoints.marker_endpoints import marker_router
 
 app = FastAPI(
     title="Transport Monitoring Tool API",
@@ -18,6 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(marker_router)
 app.include_router(detector_router)
 
 if __name__ == "__main__":

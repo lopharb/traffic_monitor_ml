@@ -25,15 +25,15 @@ async def predict_frame(file: UploadFile = File(...)):
     return {"predictions": result["preditcions"]}
 
 
-@detector_router.post("/video_stream")
-async def video_stream(file: UploadFile = File(...)):
+@detector_router.get("/video_stream")
+async def video_stream():
     # TODO redo this with streaming video
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_file:
-        shutil.copyfileobj(file.file, temp_file)
-        temp_filename = temp_file.name
+    # with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_file:
+    #     shutil.copyfileobj(file.file, temp_file)
+    #     temp_filename = temp_file.name
 
     def generate():
-        cap = cv2.VideoCapture(temp_filename)
+        cap = cv2.VideoCapture('video.mp4')
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
