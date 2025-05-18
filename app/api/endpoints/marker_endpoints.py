@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from ...database.db import DatabaseManager
 
 
 marker_router = APIRouter(prefix='/api/v1/markers')
@@ -11,10 +12,14 @@ async def ping():
 
 @marker_router.get("/")
 async def get_markers():
-    markers = [
-        {"id": 1, "position": [53.893009,  27.567444], "name": "Marker 1",
-            "streamUrl": "detect/video_stream"},
-        {"id": 2, "position": [53.90, 27.577444], "name": "Marker 2",
-            "streamUrl": "detect/video_stream"},
-    ]
+    db_manager = DatabaseManager()
+    camera_markers = db_manager.get_all_cameras()
+    markers = []
+    for cam in camera_markers:
+        markers.append({
+            "id": cam.id,
+            "position": [cam.latitude, cam.longitude],
+            "name": cam.name,
+            "streamUrl": "detect/video_stream"  # or use dynamic stream URLs
+        })
     return markers

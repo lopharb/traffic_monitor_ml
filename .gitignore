@@ -173,3 +173,7 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 data/
+dummy_data.py
+alembic/
+alembic.ini
+.vscode/
