@@ -29,13 +29,17 @@ class Detector:
 
         results = {}
         for prediction in yolo_predictions[0].boxes:
-            class_name = self.classes[int(prediction.cls.detach().cpu().item())]
+            class_name = self.classes[int(prediction.cls.item())]
+            track_id = int(prediction.id.item())
+
             if class_name not in results:
                 results[class_name] = []
+
             results[class_name].append({
+                'track_id': track_id,
                 'class_name': class_name,
-                'confidence': prediction.conf.detach().cpu().item(),
-                'xyxy': prediction.xyxy[0].detach().cpu().tolist()
+                'confidence': prediction.conf.item(),
+                'xyxy': prediction.xyxy[0].tolist()
             })
 
         return results
@@ -52,8 +56,10 @@ class Detector:
             A dictionary with two keys, 'predictions' and 'frame'. The 'predictions' key points to a dictionary containing class names as keys and lists of predictions as values. Each prediction is a dictionary with 'confidence' and 'xyxy' keys representing the prediction confidence and bounding box coordinates, respectively. The 'frame' key points to the frame image with bounding boxes and class labels superimposed.
         """
 
-        yolo_predictions = self.model.predict(image)
+        yolo_predictions = self.model.track(image)
         results = self._filter_predictions(yolo_predictions)
         frame = yolo_predictions[0].plot()
 
-        return {'preditcions': results, 'frame': frame}
+        output = {'predictions': results, 'frame': frame}
+
+        return output

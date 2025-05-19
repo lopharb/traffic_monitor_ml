@@ -4,6 +4,7 @@ from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import StreamingResponse
 
 from ...services.detector import Detector
+from ...services.tracking.tracking_results import TrackedCameraStats
 from ..schemas.detections import PredictionResponse
 
 detector_router = APIRouter(prefix='/api/v1/detect')
@@ -22,14 +23,15 @@ async def predict_frame(file: UploadFile = File(...)):
     return {"predictions": result["preditcions"]}
 
 
-@detector_router.get("/video_stream")
-async def video_stream():
+@detector_router.get("/video_stream/{cam_id}")
+async def video_stream(cam_id: int):
     # TODO redo this with streaming video
     # with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_file:
     #     shutil.copyfileobj(file.file, temp_file)
     #     temp_filename = temp_file.name
+    tracked_stats = TrackedCameraStats()
 
-    def generate():
+    def generate(cam_id):
         cap = cv2.VideoCapture('video.mp4')
         while cap.isOpened():
             ret, frame = cap.read()
@@ -39,9 +41,11 @@ async def video_stream():
             result = detector.get_vehicles(frame)
             frame = result['frame']
 
+            tracked_stats.process_detections(cam_id, result['predictions'])
+
             _, buffer = cv2.imencode('.jpg', frame)
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
         cap.release()
 
-    return StreamingResponse(generate(), media_type='multipart/x-mixed-replace; boundary=frame')
+    return StreamingResponse(generate(cam_id), media_type='multipart/x-mixed-replace; boundary=frame')
