@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from ...database.db import DatabaseManager
+from ...services.database.db import DatabaseManager
 
 
 marker_router = APIRouter(prefix='/api/v1/markers')

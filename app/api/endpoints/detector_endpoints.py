@@ -1,13 +1,10 @@
-import tempfile
-import shutil
-from fastapi import UploadFile, File
-from fastapi.responses import StreamingResponse
-import numpy as np
 import cv2
-from app.api.schemas.detections import PredictionResponse
-from fastapi import APIRouter
-from app.services.detector import Detector
+import numpy as np
+from fastapi import APIRouter, File, UploadFile
+from fastapi.responses import StreamingResponse
 
+from ...services.detector import Detector
+from ..schemas.detections import PredictionResponse
 
 detector_router = APIRouter(prefix='/api/v1/detect')
 

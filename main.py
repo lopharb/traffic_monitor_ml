@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.endpoints.detector_endpoints import detector_router
 from app.api.endpoints.marker_endpoints import marker_router
+from app.api.endpoints.authentification import auth_router
 
 app = FastAPI(
     title="Transport Monitoring Tool API",
@@ -21,6 +22,7 @@ app.add_middleware(
 
 app.include_router(marker_router)
 app.include_router(detector_router)
+app.include_router(auth_router)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="localhost", port=8000, reload=False)

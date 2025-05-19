@@ -1,5 +1,6 @@
-from .models import CameraMarker, CameraStats
+from .models import CameraMarker, CameraStats, User
 from .connector import SessionLocal
+from .. import auth
 
 
 class DatabaseManager:
@@ -105,5 +106,31 @@ class DatabaseManager:
                 CameraStats.camera_id == camera_id,
                 CameraStats.date == date
             ).first()
+        finally:
+            session.close()
+
+    def get_user_by_username(self, username: str):
+        session = self.get_session()
+        try:
+            return session.query(User).filter(User.username == username).first()
+        finally:
+            session.close()
+
+    def get_user_by_email(self, email: str):
+        session = self.get_session()
+        try:
+            return session.query(User).filter(User.email == email).first()
+        finally:
+            session.close()
+
+    def create_user(self, username: str, email: str, password: str):
+        session = self.get_session()
+        try:
+            hashed_pw = auth.get_password_hash(password)
+            user = User(username=username, email=email, hashed_password=hashed_pw)
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+            return user
         finally:
             session.close()
