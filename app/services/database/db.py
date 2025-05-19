@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 from .models import CameraMarker, CameraStats, User
 from .connector import SessionLocal
 from .. import auth
@@ -68,21 +69,22 @@ class DatabaseManager:
             session.close()
 
     def add_camera_stats(self, camera_id: int, date: str,
-                         car_count: int = 0, truck_count: int = 0,
-                         motorcycle_count: int = 0, bus_count: int = 0,
-                         pedestrian_count: int = 0, bicycle_count: int = 0,
+                         bus_count: int = 0,
+                         car_count: int = 0,
+                         motorcycle_count: int = 0,
+                         truck_count: int = 0,
+                         pickup_count: int = 0,
                          unknown_count: int = 0):
         session = self.get_session()
         try:
             stats = CameraStats(
                 camera_id=camera_id,
                 date=date,
-                car_count=car_count,
-                truck_count=truck_count,
-                motorcycle_count=motorcycle_count,
                 bus_count=bus_count,
-                pedestrian_count=pedestrian_count,
-                bicycle_count=bicycle_count,
+                car_count=car_count,
+                motorcycle_count=motorcycle_count,
+                pickup_count=pickup_count,
+                truck_count=truck_count,
                 unknown_count=unknown_count
             )
             session.add(stats)
@@ -92,10 +94,28 @@ class DatabaseManager:
         finally:
             session.close()
 
-    def get_camera_stats(self, camera_id: int):
+    def get_camera_stats(self, camera_id: int, start_date: date = None, end_date: date = None):
         session = self.get_session()
         try:
-            return session.query(CameraStats).filter(CameraStats.camera_id == camera_id).all()
+            query = session.query(CameraStats).filter(CameraStats.camera_id == camera_id)
+            if end_date is None:
+                end_date = date.today()
+
+            if start_date is None:
+                start_date = end_date - timedelta(days=14)
+
+            # Apply date filter if dates are provided
+            if start_date and end_date:
+                query = query.filter(
+                    CameraStats.date >= start_date,
+                    CameraStats.date <= end_date
+                )
+            elif start_date:
+                query = query.filter(CameraStats.date >= start_date)
+            elif end_date:
+                query = query.filter(CameraStats.date <= end_date)
+
+            return query.all()
         finally:
             session.close()
 
